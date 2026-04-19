@@ -18,12 +18,12 @@ import {
 } from "@/components/ui/sidebar";
 import {
     IconSelector,
-    IconSparkles,
     IconRosetteDiscountCheck,
     IconCreditCard,
     IconBell,
     IconLogout,
 } from "@tabler/icons-react";
+import Link from "next/link";
 
 export function NavUser({
     user,
@@ -79,7 +79,7 @@ export function NavUser({
                                         alt={user.name}
                                     />
                                     <AvatarFallback className="rounded-lg">
-                                        CN
+                                        {user.name.charAt(0)}
                                     </AvatarFallback>
                                 </Avatar>
                                 <div className="grid flex-1 text-left text-sm leading-tight">
@@ -95,7 +95,7 @@ export function NavUser({
                         <DropdownMenuGroup>
                             <DropdownMenuItem>
                                 <IconRosetteDiscountCheck />
-                                Account
+                                <Link href="/profile">Profile</Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem>
                                 <IconCreditCard />

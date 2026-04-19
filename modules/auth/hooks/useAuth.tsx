@@ -158,7 +158,7 @@ export function useLogin(): UseMutationResult<
   return useMutation({
     mutationFn: async (credentials: LoginCredentials) => {
       // Login dùng axios gốc để không bị interceptor refresh/attach Bearer can thiệp.
-      const loginUrl = `${process.env.NEXT_PUBLIC_API_URL}/auth/login`;
+      const loginUrl = ``;
 
       // Tránh mang state phiên cũ vào request login mới.
       clearAuth();

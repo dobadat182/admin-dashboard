@@ -2,10 +2,10 @@
 
 import * as React from "react";
 
-import { NavMain } from "@/components/nav-main";
-import { NavProjects } from "@/components/nav-projects";
-import { NavSecondary } from "@/components/nav-secondary";
-import { NavUser } from "@/components/nav-user";
+import { NavMain } from "@/components/layout/nav/nav-main";
+import { NavProjects } from "@/components/layout/nav/nav-projects";
+import { NavSecondary } from "@/components/layout/nav/nav-secondary";
+import { NavUser } from "@/components/layout/nav/nav-user";
 import {
     Sidebar,
     SidebarContent,
@@ -32,7 +32,7 @@ const data = {
     user: {
         name: "Moon Light",
         email: "moonlight@gmail.com",
-        avatar: "/avatars/moonlight.jpg",
+        avatar: "",
     },
     navMain: [
         {
@@ -161,7 +161,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         <SidebarMenuButton size="lg" asChild>
                             <a href="#">
                                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                                    <IconCommand className="size-4" />
+                                    <span>ML</span>
                                 </div>
                                 <div className="grid flex-1 text-left text-sm leading-tight">
                                     <span className="truncate font-medium">
