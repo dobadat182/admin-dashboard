@@ -1,0 +1,15 @@
+node_modules
+.next
+out
+dist
+build
+coverage
+.turbo
+
+*.log
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Optional: ignore generated types if you add them later
+next-env.d.ts
