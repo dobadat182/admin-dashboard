@@ -8,10 +8,7 @@ import { Loader2 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { AxiosError } from "axios";
 import { useProfile } from "@/modules/auth/hooks/useAuth";
-import {
-  DEFAULT_LOGGED_IN_ROUTE,
-  isPublicAuthRoute,
-} from "@/lib/auth-paths";
+import { DEFAULT_LOGGED_IN_ROUTE, isPublicAuthRoute } from "@/lib/auth-paths";
 
 // =========================================================
 // Singleton QueryClient — tạo ngoài component tránh re-create
@@ -118,7 +115,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   if (!hydrated) {
     return (
       <div
-        className="flex h-svh w-full items-center justify-center bg-background"
+        className="bg-background flex h-svh w-full items-center justify-center"
         role="status"
         aria-label="Loading session"
       >

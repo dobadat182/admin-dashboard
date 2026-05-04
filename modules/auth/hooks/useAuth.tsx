@@ -7,9 +7,10 @@ import {
 } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import axiosInstance from "@/lib/api";
-import { DEFAULT_LOGGED_IN_ROUTE, safePostLoginPath } from "@/lib/auth-paths";
+import { DEFAULT_LOGGED_IN_ROUTE, hasAdminRole, safePostLoginPath } from "@/lib/auth-paths";
 import { useAuthStore, User } from "@/stores/authStore";
-import axios, { AxiosError } from "axios";
+import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
+import { toast } from "sonner";
 
 // =========================================================
 // Types
@@ -81,6 +82,41 @@ export const authKeys = {
   all: ["auth"] as const,
   profile: () => [...authKeys.all, "profile"] as const,
 };
+
+const ADMIN_LOGIN_FORBIDDEN_MESSAGE = "Chỉ tài khoản admin mới được đăng nhập vào hệ thống.";
+
+async function revokeSessionAfterNonAdminLogin(accessToken: string): Promise<void> {
+  try {
+    await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/auth/logout`,
+      {},
+      {
+        withCredentials: true,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    );
+  } catch {
+    // Bỏ qua — vẫn chặn đăng nhập phía client
+  }
+}
+
+async function assertAdminCanUseDashboard(data: LoginResponse): Promise<void> {
+  const roles = data.user?.data?.roles;
+  if (hasAdminRole(roles)) return;
+
+  await revokeSessionAfterNonAdminLogin(data.data.access_token);
+
+  throw new AxiosError<ApiError>(ADMIN_LOGIN_FORBIDDEN_MESSAGE, "403", undefined, undefined, {
+    status: 403,
+    statusText: "Forbidden",
+    data: { message: ADMIN_LOGIN_FORBIDDEN_MESSAGE, statusCode: 403 },
+    headers: {},
+    config: {} as InternalAxiosRequestConfig,
+  });
+}
 
 export interface UpdateProfileInput {
   first_name: string;
@@ -158,33 +194,42 @@ export function useLogin(): UseMutationResult<
   return useMutation({
     mutationFn: async (credentials: LoginCredentials) => {
       // Login dùng axios gốc để không bị interceptor refresh/attach Bearer can thiệp.
-      const loginUrl = ``;
+      const loginUrl = `${process.env.NEXT_PUBLIC_API_URL}/auth/login`;
 
       // Tránh mang state phiên cũ vào request login mới.
       clearAuth();
 
+      let data: LoginResponse;
       try {
-        const { data } = await axios.post<LoginResponse>(loginUrl, credentials, {
-          withCredentials: true,
-          headers: { "Content-Type": "application/json" },
-        });
-        return data;
+        const res = await axios.post<LoginResponse>(loginUrl, credentials);
+        data = res.data;
       } catch (err) {
         const axiosErr = err as AxiosError<ApiError>;
 
         // Một số backend set cookie bootstrap ở lần đầu rồi mới cho login lần sau.
         if (axiosErr.response?.status === 401) {
-          const { data } = await axios.post<LoginResponse>(loginUrl, credentials, {
+          const res = await axios.post<LoginResponse>(loginUrl, credentials, {
             withCredentials: true,
             headers: { "Content-Type": "application/json" },
           });
-          return data;
+          data = res.data;
+        } else {
+          throw err;
         }
-
-        throw err;
       }
+
+      await assertAdminCanUseDashboard(data);
+      return data;
     },
-    onSuccess: (data, variables) => {
+    onError: (error) => {
+      const msg = axios.isAxiosError(error as any)
+        ? ((error.response?.data as ApiError | undefined)?.message ?? error.message)
+        : error instanceof Error
+          ? error.message
+          : "Đăng nhập thất bại";
+      toast.error(msg);
+    },
+    onSuccess: (data) => {
       // Backend set httpOnly cookie refresh token qua Set-Cookie header tự động
       // Chỉ cần lưu accessToken vào Zustand
       setAccessToken(data.data.access_token);
@@ -193,8 +238,7 @@ export function useLogin(): UseMutationResult<
       // Seed cache — không cần gọi /auth/me thêm lần nữa
       queryClient.setQueryData(authKeys.profile(), data.user);
 
-      const target = safePostLoginPath(variables.redirectTo, DEFAULT_LOGGED_IN_ROUTE);
-      router.replace(target);
+      router.push("/");
     },
   });
 }

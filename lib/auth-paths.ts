@@ -5,7 +5,13 @@ export function isPublicAuthRoute(pathname: string): boolean {
   return PUBLIC_AUTH_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
 }
 
-export const DEFAULT_LOGGED_IN_ROUTE = "/dashboard";
+export const DEFAULT_LOGGED_IN_ROUTE = "/profile";
+
+/** API trả `roles: string[]` (ví dụ Laravel); so khớp không phân biệt hoa thường. */
+export function hasAdminRole(roles: string[] | undefined | null): boolean {
+  if (!roles?.length) return false;
+  return roles.some((role) => role.toLowerCase() === "admin");
+}
 
 /** Tránh open redirect; không đưa user quay lại trang auth sau login. */
 export function safePostLoginPath(next: string | null | undefined, fallback: string): string {

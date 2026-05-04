@@ -50,11 +50,7 @@ export const useAuthStore = create<AuthState>()(
         setUser: (user) => set({ user }, false, "setUser"),
 
         clearAuth: () =>
-          set(
-            { user: null, accessToken: null, isAuthenticated: false },
-            false,
-            "clearAuth",
-          ),
+          set({ user: null, accessToken: null, isAuthenticated: false }, false, "clearAuth"),
       }),
       {
         name: "auth-storage",

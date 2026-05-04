@@ -19,7 +19,6 @@ import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 export function LoginForm() {
-  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -28,21 +27,9 @@ export function LoginForm() {
 
   const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
-    login({
-      email,
-      password,
-      redirectTo: searchParams.get("next"),
-    });
+    console.log(email, password);
+    login({ email, password });
   };
-
-  useEffect(() => {
-    if (isSuccess) {
-      toast.success("Login successful");
-    }
-    if (error) {
-      toast.error(error.response?.data?.message ?? "Login failed");
-    }
-  }, [isSuccess, error]);
 
   return (
     <div className="flex w-full flex-col gap-6">
